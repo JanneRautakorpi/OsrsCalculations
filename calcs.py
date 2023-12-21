@@ -1,4 +1,3 @@
-import random
 import math
 
 strengthLevel = 99
@@ -52,7 +51,7 @@ class NPC:
         
         defRoll = (self.defence + 9) * (defStyle + 64)
         AttDefRolls["DefRoll"] = defRoll
-        
+
 class Player:
     def __init__(self, attBonus, strLevel,
                  strBonus, prayer, meleeVoid,
@@ -104,7 +103,17 @@ class Player:
         tmpAtt *= attackMult
         AttDefRolls["AttRoll"] = math.floor(tmpAtt)
 
+def calcDps(speed, attRoll, defRoll, maxHit):
+    if (attRoll > defRoll):
+        hitChance = 1 - ((defRoll + 2) / (2*(attRoll + 1)))
+    else:
+        hitChance = (attRoll) / (2 * (defRoll + 1))
+    
+    avgDamage = 0.5 * maxHit * hitChance 
+    avgDps = avgDamage / speed
+    return avgDps
 def main():
+    weaponSpeed = 4 # in ticks (tick = 0.6 seconds)
     attacker = Player(156, totalStrength, 158,
                       "piety", None, 0, "slash", 0,
                       0)
@@ -118,7 +127,11 @@ def main():
                   90, 90)
     monster.calcDefRoll()
     
-
+    dps = calcDps(weaponSpeed,
+                  AttDefRolls["AttRoll"],
+                  AttDefRolls["DefRoll"],
+                  attacker.maxHit)
+    print(dps)
 
 if __name__ == "__main__":
     main()

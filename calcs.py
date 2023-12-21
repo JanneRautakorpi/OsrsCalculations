@@ -112,6 +112,10 @@ def calcDps(speed, attRoll, defRoll, maxHit):
     avgDamage = 0.5 * maxHit * hitChance 
     avgDps = avgDamage / speed
     return avgDps
+
+def calcAvgDuration(health, dps):
+    return health / dps
+
 def main():
     weaponSpeed = 4 # in ticks (tick = 0.6 seconds)
     attacker = Player(156, totalStrength, 158,
@@ -131,7 +135,9 @@ def main():
                   AttDefRolls["AttRoll"],
                   AttDefRolls["DefRoll"],
                   attacker.maxHit)
-    print(dps)
+
+    duration = calcAvgDuration(monster.hp, dps)
+    print(f'On average the fight will last for  {duration:.0f} seconds')
 
 if __name__ == "__main__":
     main()

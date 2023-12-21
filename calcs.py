@@ -129,7 +129,7 @@ def calcAvgDuration(health, dps):
     return health / dps
 
 def main():
-    weaponSpeed = 4 # in ticks (tick = 0.6 seconds)
+    weaponSpeed = 4 * 0.6 # ticks * 0.6s
     attacker = Player(156, totalStrength, 158,
                       "piety", None, 0, "slash", 0,
                       0)

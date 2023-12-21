@@ -10,6 +10,7 @@ AttDefRolls = {
     "DefRoll":0
 }
 
+# Strength multipliers when prayer is activated
 prayerStr = {
     "burst":1.05,
     "superhuman":1.10,
@@ -18,6 +19,7 @@ prayerStr = {
     "piety":1.23
 }
 
+# Attack multipliers when prayer is activated
 prayerAtt = {
     "clarity":1.05,
     "improved":1.10,
@@ -26,6 +28,7 @@ prayerAtt = {
     "piety":1.20
 }
 
+# To determine which style is being used
 Style = {
     "stab":False,
     "slash":False,
@@ -33,6 +36,9 @@ Style = {
 }
 
 class NPC:
+    '''
+    Attributes are npc's stats.
+    '''
     def __init__(self, hp, defence,
                  stabD, slashD, crushD):
         self.hp = hp
@@ -53,6 +59,12 @@ class NPC:
         AttDefRolls["DefRoll"] = defRoll
 
 class Player:
+    ''''
+    Player's stats and bonuses.
+    Corresponding attack style will also be set.
+    Functions are to calculate player's own effective stats
+    and max hit.
+    '''
     def __init__(self, attBonus, strLevel,
                  strBonus, prayer, meleeVoid,
                  effStr, attStyle, maxHit,

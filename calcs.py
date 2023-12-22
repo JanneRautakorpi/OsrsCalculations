@@ -38,7 +38,14 @@ Style = {
 
 class NPC:
     '''
-    Attributes are npc's stats.
+    Class is for NPCs (non-player characters).
+
+    Args and attributes (identical in this case):
+        hp (int): amount of health NPC has
+        defence (int): defence level
+        stabD (int): defence bonus for stab style
+        slashD (int): defence bonus for slash style
+        crushD (int): defence bonus for crush style
     '''
     def __init__(self, hp, defence,
                  stabD, slashD, crushD):
@@ -63,25 +70,37 @@ class NPC:
         AttDefRolls["DefRoll"] = defRoll
 
 class Player:
-    ''''
-    Player's stats and bonuses.
-    Corresponding attack style will also be set.
-    Functions are to calculate player's own effective stats
-    and max hit.
     '''
+    Class is to hold player object's properties. They are used
+    to simulate fights with fight-specific values.
+
+    Args:
+        attBonus (int): player's total attack bonus (gear dependant)
+        strLevel (int): player's total strength level (base level + boost)
+        strBonus (int): strength bonus (gear dependant)
+        prayer (str): key to get corresponding multiplier from global dictionary
+        meleeVoid (bool): If the player has void melee. None as default
+        attStyle (str): chosen attack style
+        
+    Attributes:
+        All arguments and next three:
+        maxHit (int): describes player's maximal damage hitsplat. 0 as default, calculated later
+        effAtt (int): effective attack level
+        effStr (int): effective strength level. Used to calculate max hits
+    '''
+
     def __init__(self, attBonus, strLevel,
                  strBonus, prayer, meleeVoid,
-                 effStr, attStyle, maxHit,
-                 effAtt):
+                 attStyle):
         self.attBonus = attBonus
         self.strLevel = strLevel
         self.strBonus = strBonus
         self.prayer = prayer
         self.meleeVoid = meleeVoid
-        self.effStr = effStr
+        self.effStr = 0
         self.attStyle = attStyle
-        self.maxHit = maxHit,
-        self.effAtt = effAtt
+        self.maxHit = 0,
+        self.effAtt = 0
         Style[attStyle] = True
 
     def calcEffStr(self):
@@ -120,6 +139,18 @@ class Player:
         AttDefRolls["AttRoll"] = math.floor(tmpAtt)
 
 def calcDps(speed, attRoll, defRoll, maxHit):
+    '''
+    Calculates the very average damage-per-second.
+
+    Parameters:
+        speed (int): attack speed of given weapon in seconds
+        attRoll (int): rolled attack
+        defRoll (int): rolled attack
+        maxHit (int): maximum value of damage
+
+    Return:
+        avgDps (float): Damage-per-second
+    '''
     roll = hitChance(attRoll, defRoll)
 
     avgDamage = 0.5 * maxHit * roll 
@@ -127,9 +158,30 @@ def calcDps(speed, attRoll, defRoll, maxHit):
     return avgDps
 
 def calcAvgDuration(health, dps):
+    '''
+    Calculates the average time the fight takes.
+
+    Parameters:
+        health (int): how much health does the enemy (NPC) have
+        dps (int): average damage-per-second
+
+    Return:
+        average fight duration in seconds
+    '''
     return health / dps
 
 def hitChance(attRoll, defRoll):
+    '''
+    Calculates the chance of successful hit
+
+    Paramters:
+        attRoll (int): attack roll
+        defRoll (int): defense roll
+
+    Return:
+        hitChance (int): Probability of rolling successful hit [0, 1].
+    '''
+
     if (attRoll > defRoll):
         hitChance = 1 - ((defRoll + 2) / (2 * (attRoll + 1)))
     else:
@@ -138,6 +190,18 @@ def hitChance(attRoll, defRoll):
     return hitChance
 
 def simulation(npc, player, speed, count):
+    '''
+    Simulates fight 'count' times. 
+
+    Parameters:
+        npc (NPC): enemy of the fight
+        player (Player): attacker
+        speed (int): attack speed of the weapon, given in seconds. Converted to ticks later on
+        count (int): how many times simulation is ran
+
+    Return:
+        average time (in ticks) of simulated fights
+    '''
     ticks = 0
     totalTicks = 0
     health = getattr(npc, "hp")
@@ -151,8 +215,10 @@ def simulation(npc, player, speed, count):
             rolledDamage = random.randint(0, maxhit)
 
             if (rolledAccuracy > chance):
+                #print(f"health: {health} - dmg: {rolledDamage}")
                 health -= rolledDamage
-                ticks += speed
+            ticks += speed
+
         # reset values back to normal.
         health = getattr(npc, "hp")
         totalTicks += ticks
@@ -163,11 +229,10 @@ def simulation(npc, player, speed, count):
 
 def main():
     weaponSpeed = 4 * 0.6 # in seconds. (ticks * 0.6s)
-    simulationCount = 50
+    simulationCount = 2
 
     attacker = Player(156, totalStrength, 158,
-                      "piety", None, 0, "slash", 0,
-                      0)
+                      "piety", None, "slash")
     attacker.calcEffStr()
     attacker.calcMaxHit()
     attacker.calcEffAtt()

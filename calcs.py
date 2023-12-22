@@ -1,4 +1,5 @@
 import math
+import random
 
 strengthLevel = 99
 totalStrength = strengthLevel + 19
@@ -47,6 +48,9 @@ class NPC:
         self.slashD = slashD
         self.crushD = crushD
 
+    def getHp(self):
+        return self.hp
+    
     def calcDefRoll(self):
         if (Style["stab"] == True):
             defStyle = self.stabD
@@ -116,20 +120,51 @@ class Player:
         AttDefRolls["AttRoll"] = math.floor(tmpAtt)
 
 def calcDps(speed, attRoll, defRoll, maxHit):
-    if (attRoll > defRoll):
-        hitChance = 1 - ((defRoll + 2) / (2*(attRoll + 1)))
-    else:
-        hitChance = (attRoll) / (2 * (defRoll + 1))
-    
-    avgDamage = 0.5 * maxHit * hitChance 
+    roll = hitChance(attRoll, defRoll)
+
+    avgDamage = 0.5 * maxHit * roll 
     avgDps = avgDamage / speed
     return avgDps
 
 def calcAvgDuration(health, dps):
     return health / dps
 
+def hitChance(attRoll, defRoll):
+    if (attRoll > defRoll):
+        hitChance = 1 - ((defRoll + 2) / (2 * (attRoll + 1)))
+    else:
+        hitChance = (attRoll) / (2 * (defRoll + 1))
+
+    return hitChance
+
+def simulation(npc, player, speed, count):
+    ticks = 0
+    totalTicks = 0
+    health = getattr(npc, "hp")
+    maxhit = getattr(player, "maxHit")
+    chance = hitChance(AttDefRolls["AttRoll"], AttDefRolls["DefRoll"])
+    speed /= 0.6 # conversion to ticks
+
+    for _ in range(count):
+        while (health > 0):
+            rolledAccuracy = random.random()
+            rolledDamage = random.randint(0, maxhit)
+
+            if (rolledAccuracy > chance):
+                health -= rolledDamage
+                ticks += speed
+        # reset values back to normal.
+        health = getattr(npc, "hp")
+        totalTicks += ticks
+        ticks = 0
+    
+    averageTicks = (totalTicks) / (count)
+    return averageTicks
+
 def main():
-    weaponSpeed = 4 * 0.6 # ticks * 0.6s
+    weaponSpeed = 4 * 0.6 # in seconds. (ticks * 0.6s)
+    simulationCount = 50
+
     attacker = Player(156, totalStrength, 158,
                       "piety", None, 0, "slash", 0,
                       0)
@@ -143,13 +178,15 @@ def main():
                   90, 90)
     monster.calcDefRoll()
     
-    dps = calcDps(weaponSpeed,
+    print(simulation(monster, attacker, weaponSpeed, simulationCount))
+    
+    """dps = calcDps(weaponSpeed,
                   AttDefRolls["AttRoll"],
                   AttDefRolls["DefRoll"],
                   attacker.maxHit)
-
+    
     duration = calcAvgDuration(monster.hp, dps)
     print(f'On average the fight will last for  {duration:.0f} seconds')
-
+    """
 if __name__ == "__main__":
     main()

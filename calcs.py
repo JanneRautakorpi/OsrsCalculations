@@ -40,7 +40,7 @@ class NPC:
     '''
     Class is for NPCs (non-player characters).
 
-    Args and attributes (identical in this case):
+    Args and attributes (same in this case):
         hp (int): amount of health NPC has
         defence (int): defence level
         stabD (int): defence bonus for stab style

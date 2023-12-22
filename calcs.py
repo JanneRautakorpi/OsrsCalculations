@@ -47,6 +47,7 @@ class NPC:
         slashD (int): defence bonus for slash style
         crushD (int): defence bonus for crush style
     '''
+
     def __init__(self, hp, defence,
                  stabD, slashD, crushD):
         self.hp = hp
@@ -199,11 +200,13 @@ def simulation(npc, player, speed, count):
         speed (int): attack speed of the weapon, given in seconds. Converted to ticks later on
         count (int): how many times simulation is ran
 
-    Return:
-        average time (in ticks) of simulated fights
+    Returns:
+        tickArray: array of duration of individual fights
+        splashCounter (int): how many times splashing happened in simulation
     '''
     ticks = 0
-    totalTicks = 0
+    splashCounter = 0
+    tickArray = []
     health = getattr(npc, "hp")
     maxhit = getattr(player, "maxHit")
     chance = hitChance(AttDefRolls["AttRoll"], AttDefRolls["DefRoll"])
@@ -213,23 +216,21 @@ def simulation(npc, player, speed, count):
         while (health > 0):
             rolledAccuracy = random.random()
             rolledDamage = random.randint(0, maxhit)
-
             if (rolledAccuracy > chance):
-                #print(f"health: {health} - dmg: {rolledDamage}")
                 health -= rolledDamage
+            else:
+                splashCounter += 1
             ticks += speed
 
-        # reset values back to normal.
+        tickArray.append(ticks)
         health = getattr(npc, "hp")
-        totalTicks += ticks
         ticks = 0
-    
-    averageTicks = (totalTicks) / (count)
-    return averageTicks
+
+    return tickArray, splashCounter
 
 def main():
     weaponSpeed = 4 * 0.6 # in seconds. (ticks * 0.6s)
-    simulationCount = 2
+    simulationCount = 10
 
     attacker = Player(156, totalStrength, 158,
                       "piety", None, "slash")
@@ -243,15 +244,22 @@ def main():
                   90, 90)
     monster.calcDefRoll()
     
-    print(simulation(monster, attacker, weaponSpeed, simulationCount))
-    
-    """dps = calcDps(weaponSpeed,
+    ticks, splashes = simulation(monster, attacker, weaponSpeed, simulationCount)
+
+    ticksInSeconds = [round(s * 0.6, 2) for s in ticks]
+
+    dps = calcDps(weaponSpeed,
                   AttDefRolls["AttRoll"],
                   AttDefRolls["DefRoll"],
                   attacker.maxHit)
+    duration = calcAvgDuration(getattr(monster, "hp"), dps)
     
-    duration = calcAvgDuration(monster.hp, dps)
-    print(f'On average the fight will last for  {duration:.0f} seconds')
-    """
+    simDur = round(sum(ticksInSeconds) / len(ticksInSeconds), 2)
+
+    print(f"Simulation count: {simulationCount}")
+    print(f"Splashes per fight: {splashes / simulationCount}")
+    print(f"Average fight duration: {simDur:.0f} seconds")
+    print(f'Theoretical duration: {duration:.0f} seconds')
+    
 if __name__ == "__main__":
     main()
